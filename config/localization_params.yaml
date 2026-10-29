@@ -1,0 +1,9 @@
+# 预留的工程配置模板，当前未启动地图配准节点！
+# 后续实现 FastGICP 时按真实话题、PCD 地址、外参填写。
+map_frame: map
+map_pcd_file: ""  # 建图结束后填入 PCD 绝对路径，例如 /root/maps/hall.pcd
+fastlio_odom_topic: /Odometry
+fastlio_registered_cloud_topic: /cloud_registered
+# FAST-LIO 原始坐标系以消息头为准，不在这里假定初始位置一定是(0,0,0)。
+# 初始位姿候选可读取同包 config/startup_reference.yaml。
+# 重定位最终目标：map 中的 base_footprint 位姿。

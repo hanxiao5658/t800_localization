@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- 这里启动的是重定位节点，不会自动启动 FAST-LIO2 或运动控制器。 -->
+  <arg name="pcd_file" default="$(find t800_localization)/maps/hall.pcd" />
+  <arg name="params_file" default="$(find t800_localization)/config/fastgicp_params.yaml" />
+
+  <node pkg="t800_localization" type="fastgicp_relocalizer"
+        name="fastgicp_relocalizer" output="screen" respawn="false">
+    <rosparam command="load" file="$(arg params_file)" />
+    <param name="map_pcd_file" value="$(arg pcd_file)" />
+  </node>
+</launch>

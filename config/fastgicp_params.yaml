@@ -1,0 +1,40 @@
+# ROS1 / t800_localization / 初始 FastGICP 地图重定位实验参数
+# 只定位，不启动导航，不向运动控制器发送速度。
+map_frame: map
+odom_topic: /Odometry
+registered_cloud_topic: /cloud_registered
+
+# 首次建图得到的 PCD 与以下初始位姿必须属于同一地图坐标系。
+# 要在 launch 中指定实际 PCD 路径。
+
+# 初始位姿对应 FAST-LIO 的 IMU/body，不是脚尖中点或 LiDAR 中心。
+# 从首次建图时 capture_reference_pose.py 生成的 startup_reference.yaml
+# 取 position.x/y/z 和 rpy_rad.roll/pitch/yaw，填写在下面。
+initial_pose_configured: true
+initial_imu_pose_in_map: [5.504971358350678, 6.452238450546107, 4.243637814712193, -0.03384838140217874, -0.08122024747938104, 0.22600977492883917]
+
+# 第一次建议手动调用 service；观察可靠后再打开自动初始化。
+auto_relocalize: false
+# 先不广播 TF，避免重复发布 map->camera_init。
+publish_tf: false
+
+min_scans: 10
+max_scans: 25
+min_source_points: 150
+min_target_points: 300
+scan_voxel_size: 0.15
+map_voxel_size: 0.20
+local_map_radius_xy: 12.0
+local_map_half_height: 4.0
+max_correspondence_distance: 1.2
+
+# fitness = 点到目标的均方距离(m^2)，以及一次配准的重叠比例。
+# 阈值只是启动实验的初始值，须按真实展厅结果标定。
+max_fitness_mse: 0.25
+overlap_distance: 0.50
+min_overlap_fraction: 0.30
+max_translation_correction: 1.5
+max_yaw_correction_deg: 25.0
+max_data_age: 1.0
+gicp_threads: 4
+gicp_iterations: 50

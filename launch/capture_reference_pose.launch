@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- 在首次建图的同一场 FAST-LIO 运行中，停在将来的固定开机点后调用。 -->
+  <arg name="odom_topic" default="/Odometry"/>
+  <arg name="output_file" default="$(find t800_localization)/config/startup_reference.yaml"/>
+  <arg name="timeout" default="15.0"/>
+
+  <node pkg="t800_localization"
+        type="capture_reference_pose.py"
+        name="capture_reference_pose"
+        output="screen" respawn="false">
+    <param name="odom_topic" value="$(arg odom_topic)"/>
+    <param name="output_file" value="$(arg output_file)"/>
+    <param name="timeout" value="$(arg timeout)"/>
+  </node>
+</launch>
