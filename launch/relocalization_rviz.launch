@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Visualization only. Do not modify FAST-LIO, GICP, TF or navigation. -->
+  <arg name="pcd_file" default="$(find t800_localization)/maps/hall.pcd" />
+  <arg name="params_file" default="$(find t800_localization)/config/fastgicp_params.yaml" />
+  <!-- ROS1 pcl_ros /cloud_pcd PointCloud2 output, fixed map frame. -->
+  <node pkg="pcl_ros" type="pcd_to_pointcloud" name="t800_prior_map_for_rviz"
+        args="$(arg pcd_file) 3.0" output="screen">
+    <param name="frame_id" value="map" />
+    <param name="latch" value="true" />
+    <remap from="cloud_pcd" to="/my_ros1/localization/prior_map" />
+  </node>
+  <node pkg="t800_localization" type="relocalization_rviz.py"
+        name="t800_relocalization_rviz" output="screen">
+    <rosparam command="load" file="$(arg params_file)" />
+  </node>
+  <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find t800_localization)/rviz_config/check_relocate.rviz" />
+</launch>

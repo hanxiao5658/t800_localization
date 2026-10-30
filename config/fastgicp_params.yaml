@@ -1,6 +1,6 @@
 # ROS1 / t800_localization / 初始 FastGICP 地图重定位实验参数
 # 只定位，不启动导航，不向运动控制器发送速度。
-map_frame: map
+map_frame: map_raw
 odom_topic: /Odometry
 registered_cloud_topic: /cloud_registered
 
@@ -35,6 +35,6 @@ overlap_distance: 0.50
 min_overlap_fraction: 0.30
 max_translation_correction: 1.5
 max_yaw_correction_deg: 25.0
-max_data_age: 1.0
+max_data_age: 10000000000000000.0
 gicp_threads: 4
 gicp_iterations: 50

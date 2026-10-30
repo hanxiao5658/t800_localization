@@ -1,0 +1,14 @@
+# Derived ONLY from the original PCD MAPPING run. Do not overwrite with a startup bag.
+map_frame: map
+raw_map_frame: map_raw
+leveling_mode: gravity
+calibrated: true
+gravity_up_in_map_raw:
+- -0.3926429747198644
+- 0.00863222354067823
+- 0.9196504657313449
+ground_z_offset_m: 0.0
+manual_roll_deg: 0.0
+manual_pitch_deg: 0.0
+calibration_bag: robot_mid360s_hall_2026-10-27-14-24-02.bag
+calibration_sample_count: 600

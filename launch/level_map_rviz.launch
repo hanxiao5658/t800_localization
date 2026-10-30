@@ -1,0 +1,27 @@
+<launch>
+  <!-- Visualization/coordinate-leveling ONLY: no motion commands, no GICP changes. -->
+  <arg name="pcd_file" default="$(find t800_localization)/maps/hall.pcd"/>
+  <arg name="leveling_config" default="$(find t800_localization)/config/map_leveling.yaml"/>
+  <arg name="gicp_config" default="$(find t800_localization)/config/fastgicp_params.yaml"/>
+  <arg name="mode" default="gravity"/>
+  <arg name="roll_deg" default="0.0"/>
+  <arg name="pitch_deg" default="0.0"/>
+
+  <!-- PCD bytes are UNCHANGED and still expressed in map_raw. -->
+  <node pkg="pcl_ros" type="pcd_to_pointcloud" name="t800_prior_map_raw"
+        args="$(arg pcd_file) 3.0" output="screen">
+    <param name="frame_id" value="map_raw"/>
+    <param name="latch" value="true"/>
+    <remap from="cloud_pcd" to="/my_ros1/localization/prior_map_raw"/>
+  </node>
+
+  <node pkg="t800_localization" type="level_map_rviz.py"
+        name="t800_level_map_rviz" output="screen" respawn="false">
+    <!-- Load GICP reference (same raw map coordinates), THEN level configuration. -->
+    <rosparam command="load" file="$(arg gicp_config)"/>
+    <rosparam command="load" file="$(arg leveling_config)"/>
+    <param name="leveling_mode" value="$(arg mode)"/>
+    <param name="manual_roll_deg" value="$(arg roll_deg)"/>
+    <param name="manual_pitch_deg" value="$(arg pitch_deg)"/>
+  </node>
+</launch>
