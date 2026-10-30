@@ -5,7 +5,7 @@ body_frame: body
 imu_frame_checked: livox_frame
 parent_frame: base_footprint
 rotation_calibrated: true
-translation_measured: false
+translation_measured: true
 translation_xyz:
 - 0.0
 - 0.0

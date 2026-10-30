@@ -1,20 +1,27 @@
 <launch>
-  <!-- Visualization + map-frame pose/path, NO navigation commands. -->
+  <!-- T800 current upstream launch, with ONE added static GICP TF bridge. -->
   <arg name="pcd_file" default="$(find t800_localization)/maps/hall.pcd"/>
   <arg name="map_leveling_file" default="$(find t800_localization)/config/map_leveling.yaml"/>
   <arg name="body_extrinsics_file" default="$(find t800_localization)/config/body_extrinsics.yaml"/>
   <arg name="gicp_config" default="$(find t800_localization)/config/fastgicp_params.yaml"/>
   <arg name="publish_foot_tf" default="true"/>
-
-  <!-- Existing launch publishes static TF map -> map_raw and original PCD. -->
+  <!-- map -> map_raw (STATIC) and PCD in map_raw. -->
   <include file="$(find t800_localization)/launch/level_map_rviz.launch">
     <arg name="pcd_file" value="$(arg pcd_file)"/>
     <arg name="leveling_config" value="$(arg map_leveling_file)"/>
     <arg name="gicp_config" value="$(arg gicp_config)"/>
     <arg name="mode" value="gravity"/>
   </include>
-
-  <!-- This node computes map -> base_footprint; no duplicate map->map_raw TF. -->
+  <!-- map_raw -> camera_init (STATIC), published only AFTER first accepted GICP.
+       Keep fastgicp_params.yaml publish_tf: false to avoid duplicate publishers. -->
+  <node pkg="t800_localization" type="initial_gicp_tf_static.py"
+        name="t800_initial_gicp_tf_static" output="screen" respawn="false">
+    <param name="raw_map_frame" value="map_raw"/>
+    <param name="odom_frame" value="camera_init"/>
+    <param name="correction_topic" value="/my_ros1/localization/map_to_odom"/>
+  </node>
+  <!-- FAST-LIO2 itself publishes camera_init -> body dynamically to /tf.
+       This node publishes the horizontal map -> base_footprint branch. -->
   <node pkg="t800_localization" type="base_footprint_path.py"
         name="t800_base_footprint_path" output="screen" respawn="false">
     <rosparam command="load" file="$(arg map_leveling_file)"/>

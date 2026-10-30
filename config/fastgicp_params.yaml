@@ -16,7 +16,7 @@ initial_imu_pose_in_map: [-0.011661251902485818, 0.01987980756215344, -0.0054418
 # 第一次建议手动调用 service；观察可靠后再打开自动初始化。
 auto_relocalize: false
 # 先不广播 TF，避免重复发布 map->camera_init。
-publish_tf: true
+publish_tf: false
 
 min_scans: 10
 max_scans: 25
