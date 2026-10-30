@@ -11,12 +11,12 @@ registered_cloud_topic: /cloud_registered
 # 从首次建图时 capture_reference_pose.py 生成的 startup_reference.yaml
 # 取 position.x/y/z 和 rpy_rad.roll/pitch/yaw，填写在下面。
 initial_pose_configured: true
-initial_imu_pose_in_map: [5.504971358350678, 6.452238450546107, 4.243637814712193, -0.03384838140217874, -0.08122024747938104, 0.22600977492883917]
+initial_imu_pose_in_map: [-0.011661251902485818, 0.01987980756215344, -0.005441891987034489, 0.0016959880689807311, -0.0003822356781667627, -0.00032916646537950456]
 
 # 第一次建议手动调用 service；观察可靠后再打开自动初始化。
 auto_relocalize: false
 # 先不广播 TF，避免重复发布 map->camera_init。
-publish_tf: false
+publish_tf: true
 
 min_scans: 10
 max_scans: 25

@@ -1,0 +1,31 @@
+# Transform from nominal base_footprint to FAST-LIO2 IMU body.
+# Rotation assumes body +X horizontal projection agrees with robot +X.
+# translation_measured stays false until the height is physically measured.
+body_frame: body
+imu_frame_checked: livox_frame
+parent_frame: base_footprint
+rotation_calibrated: true
+translation_measured: false
+translation_xyz:
+- 0.0
+- 0.0
+- 1.5
+rotation_xyzw:
+- 0.0042720852481153955
+- 0.20059809684771635
+- -0.000874761391795269
+- 0.9796639156472053
+yaw_offset_deg: 0.0
+gravity_up_in_body:
+- -0.39304490816889714
+- 0.008019464583514798
+- 0.9194843056574141
+rpy_deg_diagnostic:
+- 0.49970382493703464
+- 23.14409565431323
+- -2.7022906511537915e-17
+stationary_sample_count: 800
+median_acceleration_norm_original_units: 0.994417810830534
+gyro_p99_dps: 1.8144775314022796
+accel_rel_std: 0.03521080280476019
+calibration_source: /livox/imu

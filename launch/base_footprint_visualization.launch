@@ -1,0 +1,31 @@
+<launch>
+  <!-- Visualization + map-frame pose/path, NO navigation commands. -->
+  <arg name="pcd_file" default="$(find t800_localization)/maps/hall.pcd"/>
+  <arg name="map_leveling_file" default="$(find t800_localization)/config/map_leveling.yaml"/>
+  <arg name="body_extrinsics_file" default="$(find t800_localization)/config/body_extrinsics.yaml"/>
+  <arg name="gicp_config" default="$(find t800_localization)/config/fastgicp_params.yaml"/>
+  <arg name="publish_foot_tf" default="true"/>
+
+  <!-- Existing launch publishes static TF map -> map_raw and original PCD. -->
+  <include file="$(find t800_localization)/launch/level_map_rviz.launch">
+    <arg name="pcd_file" value="$(arg pcd_file)"/>
+    <arg name="leveling_config" value="$(arg map_leveling_file)"/>
+    <arg name="gicp_config" value="$(arg gicp_config)"/>
+    <arg name="mode" value="gravity"/>
+  </include>
+
+  <!-- This node computes map -> base_footprint; no duplicate map->map_raw TF. -->
+  <node pkg="t800_localization" type="base_footprint_path.py"
+        name="t800_base_footprint_path" output="screen" respawn="false">
+    <rosparam command="load" file="$(arg map_leveling_file)"/>
+    <rosparam command="load" file="$(arg body_extrinsics_file)"/>
+    <param name="publish_tf" value="$(arg publish_foot_tf)"/>
+    <param name="only_first_gicp" value="true"/>
+    <param name="odom_topic" value="/Odometry"/>
+    <param name="correction_topic" value="/my_ros1/localization/map_to_odom"/>
+    <param name="max_path_poses" value="5000"/>
+    <param name="min_path_step_m" value="0.02"/>
+    <param name="min_path_yaw_deg" value="1.0"/>
+    <param name="max_odom_wall_age_s" value="1.0"/>
+  </node>
+</launch>
