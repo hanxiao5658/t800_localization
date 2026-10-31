@@ -223,3 +223,92 @@ rostopic info /tf_static
 基本链路验收：`/Odometry` 和 `/cloud_registered` 实时更新 → Service 返回 `success: True` → `/my_ros1/localization/status` 为 `ALIGNED_INITIAL_ONLY` → `/my_ros1/localization/pose_status` 为 `TRACKING_FIXED_GICP` → `base_footprint_pose` 和 `body_pose` 连续更新 → RViz 中 PCD/轨迹方向一致，`base_footprint` 的 Z 轴竖直。
 
 **仍需完成的工程化工作**：实测并修正 foot/body 平移外参；清理 TF 重复发布者；新增统一总 Launch/部署脚本；验证配准误差与失锁判定；为导航加入定位失效停车联锁；若需要在较长行走过程中持续抑制漂移，再设计周期地图匹配/重定位更新与平滑校正，不可简单把一次性配准视作长期绝对定位。
+
+
+
+## 坐标系定义与转换关系
+
+本项目采用以下五个坐标系，完成从 FAST-LIO2 前端里程计、FastGICP 全局重定位到机器人导航位姿的转换。
+
+```mermaid
+flowchart TD
+    A["map<br/>最终水平导航坐标系"]
+    B["map_raw<br/>首次建图 PCD 坐标系"]
+    C["camera_init<br/>本次启动的 FAST-LIO2 局部坐标系"]
+    D["body<br/>MID360s IMU 坐标系"]
+    E["base_footprint<br/>导航使用的水平机器人坐标系"]
+
+    A <-->|"固定重力校正"| B
+    B <-->|"FastGICP 初始重定位"| C
+    C <-->|"FAST-LIO2 连续里程计"| D
+    D <-->|"固定名义机械外参 + 水平化"| E
+
+    style A fill:#e3f2ef,stroke:#76b6a7,color:#202020
+    style E fill:#e3f2ef,stroke:#76b6a7,color:#202020
+```
+
+### 各坐标系的含义
+
+| 坐标系 | 定义 | 作用 |
+|---|---|---|
+| `map` | 最终水平导航坐标系 | 经过重力方向校正后的全局坐标系，供导航规划、定位结果输出使用 |
+| `map_raw` | 首次建图 PCD 坐标系 | 原始展厅地图 `maps/hall_raw.pcd` 所属坐标系 |
+| `camera_init` | 本次启动的 FAST-LIO2 局部坐标系 | 每次启动 FAST-LIO2 时建立的局部里程计参考系 |
+| `body` | MID360s IMU 坐标系 | FAST-LIO2 输出机器人实时位置和姿态时使用的机体参考系 |
+| `base_footprint` | 导航使用的水平机器人坐标系 | 根据机体位姿、机械外参和水平化规则计算，供导航模块使用 |
+
+**注意：** 定位仓库的 `base_footprint` 与导航仓库的 `foot_frame` 是同一个物理坐标系，仅命名不同，后续统一名称。
+
+### 坐标变换关系
+
+1. **`map ↔ map_raw`：地图水平化变换**
+   - 通过固定重力校正，将原始 PCD 地图坐标系转换到水平导航地图坐标系。
+   - 该变换在地图确定后保持不变。
+
+2. **`map_raw ↔ camera_init`：FastGICP 初始重定位**
+   - 将 FAST-LIO2 当前局部点云与 `hall_raw.pcd` 进行配准。
+   - 得到本次启动的局部里程计坐标系相对于原始 PCD 地图的位姿。
+   - 当前系统主要在启动阶段执行一次重定位，后续不持续进行地图匹配修正。
+
+3. **`camera_init ↔ body`：FAST-LIO2 连续里程计**
+   - 由 FAST-LIO2 根据 MID360s 点云和 IMU 实时估计。
+   - 随机器人运动持续更新，反映机体的位置和姿态。
+
+4. **`body ↔ base_footprint`：机械外参与水平化**
+   - 根据 `config/body_extrinsics.yaml` 中的名义机械外参计算。
+   - 将机体位姿转换为导航使用的机器人参考位姿。
+   - `base_footprint` 的朝向保留水平 Yaw，不直接继承机体的 Roll 和 Pitch。
+   - 因此，这里的水平化是导航参考姿态计算，并不意味着两个坐标系之间存在始终不变的完整六自由度 TF。
+
+### 全局导航位姿计算
+
+首先将 FAST-LIO2 的局部机体位姿转换到水平全局地图坐标系：
+
+\[
+{}^{map}T_{body}
+=
+{}^{map}T_{map\_raw}
+\cdot
+{}^{map\_raw}T_{camera\_init}
+\cdot
+{}^{camera\_init}T_{body}
+\]
+
+随后结合标定的机械外参和水平化规则，计算机器人在 `map` 坐标系下的 `base_footprint` 位姿。
+
+其中：
+
+- `map → map_raw`：固定地图水平化。
+- `map_raw → camera_init`：FastGICP 初始配准。
+- `camera_init → body`：FAST-LIO2 实时里程计。
+- `body → base_footprint`：标定外参与导航水平化处理。
+
+**说明：** 上图表示坐标变换的数学关系，不代表每一条关系都由独立 ROS TF Broadcaster 发布。具体 TF 发布情况取决于各节点的实现和参数配置。
+
+
+
+
+
+
+
+

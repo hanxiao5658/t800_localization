@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- RViz only: no GICP, map loader, coordinate transformation or pose nodes. -->
+  <arg name="rviz_config" default="$(find t800_localization)/rviz_config/t800_footprint.rviz"/>
+  <node pkg="rviz" type="rviz" name="t800_localization_rviz"
+        args="-d $(arg rviz_config)" output="screen" respawn="false"/>
+</launch>
