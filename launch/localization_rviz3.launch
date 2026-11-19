@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+  <!--
+    基于 localization_rviz.launch 扩展，仅供 RViz 可视化。
+    保留原有 PCD、FastGICP 扫描、footprint 轨迹和坐标轴显示。
+    新增：
+      1) 在 map=(0,0,0) 显示红 X、绿 Y、蓝 Z 坐标轴。
+      2) 从 t800_navigation/config/waypoints_real.yaml 显示 Waypoint 位置和 Yaw 箭头。
+    不启动 GICP、导航控制器，也不发布任何速度指令。
+  -->
+
+  <!-- 导航包的 ROS 名称是 t800_navigation（Git 仓库名为 t800_navigation_ros1）。 >
+  <arg name="waypoints_file" default="$(find t800_navigation)/config/waypoints_real.yaml"/-->
+  <arg name="rviz_config" default="$(find t800_localization)/rviz_config/t800_footprint_waypoints.rviz"/>
+
+  <!-- 读取 Waypoint YAML，发布 RViz MarkerArray；本节点不修改导航参数。 >
+  <node pkg="t800_localization" type="waypoint_markers_rviz.py"
+        name="t800_waypoint_markers_rviz" output="screen" respawn="false">
+    <param name="waypoints_file" value="$(arg waypoints_file)"/>
+    <param name="marker_topic" value="/my_ros1/localization/waypoint_markers"/>
+  </node-->
+
+  <!-- 保留原 launch 的 RViz 启动方式，仅替换成包含新显示项的 RViz 配置。 -->
+  <node pkg="rviz" type="rviz" name="t800_localization_rviz"
+        args="-d $(arg rviz_config)" output="screen" respawn="false"/>
+</launch>

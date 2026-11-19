@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- T800 localization computation only. ROS1 Noetic. -->
+  <!-- MID360 driver and FAST-LIO2 must be started separately. -->
+  <!-- This project uses ONLY maps/hall_raw.pcd as its reference PCD. -->
+  <arg name="pcd_file" default="$(find t800_localization)/maps/hall_raw.pcd"/>
+  <arg name="gicp_config" default="$(find t800_localization)/config/fastgicp_params.yaml"/>
+  <arg name="map_leveling_file" default="$(find t800_localization)/config/map_leveling.yaml"/>
+  <arg name="body_extrinsics_file" default="$(find t800_localization)/config/body_extrinsics.yaml"/>
+  <arg name="publish_foot_tf" default="true"/>
+
+  <!-- GICP registration. Existing YAML has publish_tf=false to avoid
+       duplicating the static map_raw->camera_init bridge below. -->
+  <include file="$(find t800_localization)/launch/fastgicp_relocalization.launch">
+    <arg name="pcd_file" value="$(arg pcd_file)"/>
+    <arg name="params_file" value="$(arg gicp_config)"/>
+  </include>
+
+  <!-- Existing launch starts these computation/publishing nodes:
+       level_map_rviz.py: map->map_raw, reference/level markers
+       pcd_to_pointcloud: prior PCD topic
+       initial_gicp_tf_static.py: map_raw->camera_init after first GICP
+       base_footprint_path.py: map->base_footprint, body poses, path
+       Despite 'visualization' in its old name, it does NOT launch RViz. -->
+  <include file="$(find t800_localization)/launch/base_footprint_visualization.launch">
+    <arg name="pcd_file" value="$(arg pcd_file)"/>
+    <arg name="map_leveling_file" value="$(arg map_leveling_file)"/>
+    <arg name="body_extrinsics_file" value="$(arg body_extrinsics_file)"/>
+    <arg name="gicp_config" value="$(arg gicp_config)"/>
+    <arg name="publish_foot_tf" value="$(arg publish_foot_tf)"/>
+  </include>
+</launch>
